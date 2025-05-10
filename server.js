@@ -125,7 +125,7 @@ passport.use(new GoogleStrategy({
     scope: ["profile", "email"],
 }, googleCallback));
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user._id);
 });
 passport.deserializeUser(async (id, done) => {
     try {
