@@ -63,9 +63,13 @@ module.exports.loginUser = (req, res, next) => {
 
 // Logout User
 module.exports.logoutUser = (req, res) => {
-    req.logout((err) => {
-        if (err) return res.status(500).json({ message: 'Error logging out' });
-        res.redirect(`${process.env.FRONTEND_URL}`);
+    req.logout(err => {
+        if (err) return res.status(500).json({ success: false, message: "Logout failed" });
+
+        req.session.destroy(() => {
+            res.clearCookie('connect.sid'); // or your session cookie name
+            return res.status(200).json({ success: true, message: "Logged out successfully" });
+        });
     });
 };
 
