@@ -59,11 +59,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
 
-app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
-app.get('/test-download', (req, res) => {
-    res.send(`<a href="/uploads/output_sentiment.csv" download>Download CSV</a>`);
-});
-
 const store = MongoStore.create({
     mongoUrl: MONGO_URL,
     crypto: {
@@ -93,7 +88,7 @@ const sessionOptions = {
 
 // Session and Passport
 app.use(session(sessionOptions));
-app.use(passport.authenticate('session'));
+// app.use(passport.authenticate('session'));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -136,6 +131,11 @@ passport.deserializeUser(async (id, done) => {
     } catch (err) {
         done(err, null);
     }
+});
+
+app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
+app.get('/test-download', (req, res) => {
+    res.send(`<a href="/uploads/output_sentiment.csv" download>Download CSV</a>`);
 });
 
 app.use((req, res, next) => {

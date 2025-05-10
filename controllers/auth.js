@@ -2,6 +2,9 @@ const User = require('../models/user');
 const passport = require('passport');
 
 module.exports.loginSuccess = async (req, res) => {
+    console.log("Inside /auth/login/success");
+    console.log("req.user:", req.user);
+
     if (req.user) {
         return res.status(200).json({
             success: true,
