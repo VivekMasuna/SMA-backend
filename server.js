@@ -93,6 +93,7 @@ const sessionOptions = {
 
 // Session and Passport
 app.use(session(sessionOptions));
+app.use(passport.authenticate('session'));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -124,6 +125,7 @@ passport.use(new GoogleStrategy({
     callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
     scope: ["profile", "email"],
 }, googleCallback));
+
 passport.serializeUser((user, done) => {
     done(null, user._id);
 });
