@@ -4,19 +4,22 @@ const path = require('path');
 const fs = require('fs');
 const logger = require('../utils/logger');
 
-function findPythonPath() {
-    try {
-        const path = execSync(process.platform === 'win32' ? 'where python' : 'which python')
-            .toString().split('\n')[0].trim();
-        logger.info(`Python path found: ${path}`);
-        return path;
-    } catch (err) {
-        logger.warn('Failed to detect Python path, falling back to "python"');
-        return 'python';
-    }
-}
+const isProduction = process.env.NODE_ENV === "production";
 
-const PYTHON_CMD = findPythonPath();
+const PYTHON_CMD = isProduction
+    ? "/var/www/vhosts/kjsieit.com/sma-vlab-backend.kjsieit.com/venv/bin/python"
+    : (() => {
+        try {
+            const path = require("child_process")
+                .execSync(process.platform === "win32" ? "where python" : "which python")
+                .toString().split("\n")[0].trim();
+            console.log(`Python path found: ${path}`);
+            return path;
+        } catch (err) {
+            console.warn('Failed to detect Python path, falling back to "python"');
+            return "python";
+        }
+    })();
 
 module.exports.experiment = async (req, res) => {
     try {
