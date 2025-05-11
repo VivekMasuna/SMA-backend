@@ -42,7 +42,8 @@ async function main() {
 }
 
 const allowedOrigins = [
-    `${process.env.FRONTEND_URL}`,
+    'https://sma-vlab.kjsieit.com',
+    'http://localhost:5173'
 ];
 app.use(cors({
     origin: function (origin, callback) {
