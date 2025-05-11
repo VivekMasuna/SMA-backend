@@ -22,6 +22,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { googleCallback } = require('./controllers/auth');
 const logger = require('./utils/logger');
 
+app.set('trust proxy', 1);
+
 // const homeRouter = require('./routes/home');
 const authRouter = require('./routes/auth');
 const scrapeRoutes = require("./routes/scrapeRoutes");
@@ -74,6 +76,15 @@ store.on("error", (err) => {
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
+
+logger.info(`Server running in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+if (isProduction) {
+    app.use((req, res, next) => {
+        logger.info(`[${req.method}] ${req.originalUrl} - Origin: ${req.headers.origin} - User: ${req.user?._id || 'Unauthenticated'}`);
+        next();
+    });
+}
+
 const sessionOptions = {
     store,
     secret: process.env.SECRET,

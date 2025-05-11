@@ -5,6 +5,8 @@ const logger = require('../utils/logger');
 module.exports.loginSuccess = async (req, res) => {
     logger.info('Inside /auth/login/success');
     logger.info(`req.user: ${JSON.stringify(req.user)}`);
+    logger.info(`Session ID: ${req.sessionID}`);
+    logger.info(`Session Data: ${JSON.stringify(req.session)}`);
 
     if (req.user) {
         return res.status(200).json({
