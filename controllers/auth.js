@@ -1,9 +1,10 @@
 const User = require('../models/user');
 const passport = require('passport');
+const logger = require('../utils/logger');
 
 module.exports.loginSuccess = async (req, res) => {
-    console.log("Inside /auth/login/success");
-    console.log("req.user:", req.user);
+    logger.info('Inside /auth/login/success');
+    logger.info(`req.user: ${JSON.stringify(req.user)}`);
 
     if (req.user) {
         return res.status(200).json({
@@ -11,6 +12,7 @@ module.exports.loginSuccess = async (req, res) => {
             user: req.user,
         });
     } else {
+        logger.warn('Unauthorized access attempt to /auth/login/success');
         return res.status(401).json({
             success: false,
             message: 'Unauthorized',
@@ -79,6 +81,8 @@ module.exports.logoutUser = (req, res) => {
 // Google Callback
 module.exports.googleCallback = async (accessToken, refreshToken, profile, done) => {
     try {
+        logger.info(`Google login callback triggered for profile ID: ${profile.id}`);
+
         let user = await User.findOne({ providerId: profile.id });
         if (!user) {
             const isAdmin = profile.emails[0].value === 'vivekmasuna999@gmail.com';
@@ -90,9 +94,13 @@ module.exports.googleCallback = async (accessToken, refreshToken, profile, done)
                 role: isAdmin ? 'admin' : 'user',
             });
             await user.save();
+            logger.info(`New user created: ${user.email}`);
+        } else {
+            logger.info(`Existing user logged in: ${user.email}`);
         }
         return done(null, user);
     } catch (err) {
+        logger.error(`Google callback error: ${err.message}`);
         return done(err, null);
     }
 };

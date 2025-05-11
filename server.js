@@ -20,6 +20,7 @@ const User = require('./models/user');
 const bcrypt = require('bcrypt');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { googleCallback } = require('./controllers/auth');
+const logger = require('./utils/logger');
 
 // const homeRouter = require('./routes/home');
 const authRouter = require('./routes/auth');
@@ -68,7 +69,7 @@ const store = MongoStore.create({
 });
 
 store.on("error", (err) => {
-    console.log("ERROR in MONGO SESSION STORE", err);
+    logger.error(`Mongo session store error: ${err.message}`);
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -88,7 +89,6 @@ const sessionOptions = {
 
 // Session and Passport
 app.use(session(sessionOptions));
-// app.use(passport.authenticate('session'));
 app.use(passport.initialize());
 app.use(passport.session());
 

@@ -13,9 +13,11 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get('/google/callback',
     passport.authenticate('google', {
         failureRedirect: '/login/failed',
-        successRedirect: `${process.env.FRONTEND_URL}/`,
-        session: true
-    })
+        session: true,
+    }),
+    (req, res) => {
+        res.redirect(`${process.env.FRONTEND_URL}/`);
+    }
 );
 
 // router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
