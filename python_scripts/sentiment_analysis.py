@@ -8,6 +8,9 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 )
 
+def log(message):
+    print(f"[PYTHON] {message}", file=sys.stderr, flush=True)
+
 def analyze_sentiment(text):
     polarity = TextBlob(str(text)).sentiment.polarity
     if polarity > 0:
