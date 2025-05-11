@@ -76,6 +76,7 @@ module.exports.sentimentCSV = (req, res) => {
     }
 
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'sentiment_analysis.py');
+    logger.info(`Using Python script: ${pythonScript}`);
 
     exec(`${PYTHON_CMD} "${pythonScript}" "${filePath}"`, (error, stdout, stderr) => {
         if (error || stderr) {
