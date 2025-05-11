@@ -2,6 +2,7 @@ const { PythonShell } = require("python-shell");
 const ScrapedData = require("../models/ScrapedData");
 const path = require("path");
 const TwitterData = require("../models/TwitterData");
+const logger = require("../utils/logger");
 
 module.exports.scrapeData = async (req, res) => {
     const { method, url } = req.body;
@@ -15,12 +16,13 @@ module.exports.scrapeData = async (req, res) => {
             script = "scrape_requests.py";
             break;
         default:
+            logger.warn(`Invalid scraping method: ${method}`);
             return res.status(400).json({ error: "Invalid method selected" });
     }
 
     const options = {
         mode: "text",
-        pythonPath: "python",
+        pythonPath: "/var/www/vhosts/kjsieit.com/sma-vlab-backend.kjsieit.com/venv/bin/python",
         scriptPath: path.join(__dirname, "../python_scripts"),
         args: [url],
     };
@@ -28,21 +30,21 @@ module.exports.scrapeData = async (req, res) => {
     PythonShell.run(script, options)
         .then((messages) => {
             if (!messages || messages.length === 0) {
-                console.error("Empty response from Python script.");
+                logger.error("Empty response from Python script.");
                 return res.status(500).json({ error: "No data returned from scraper" });
             }
 
             try {
                 const parsedData = JSON.parse(messages.join("")); // Convert to JSON if needed
-                // console.log("DATA IS: ", parsedData);
+                logger.info(`Scraping successful using ${method} on URL: ${url}`);
                 res.json({ message: "Scraping successful", data: parsedData });
             } catch (error) {
-                console.error("JSON Parse Error:", error);
+                logger.error(`JSON Parse Error from ${script}: ${error.message}`);
                 res.status(500).json({ error: "Invalid JSON response from Python script" });
             }
         })
         .catch((err) => {
-            console.error("Python Script Error:", err);
+            logger.error(`Python Script Execution Error [${script}]: ${err.message}`);
             res.status(500).json({ error: err.message });
         });
 };

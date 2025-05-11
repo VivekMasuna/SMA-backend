@@ -77,14 +77,6 @@ store.on("error", (err) => {
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-logger.info(`Server running in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
-if (isProduction) {
-    app.use((req, res, next) => {
-        logger.info(`[${req.method}] ${req.originalUrl} - Origin: ${req.headers.origin} - User: ${req.user?._id || 'Unauthenticated'}`);
-        next();
-    });
-}
-
 const sessionOptions = {
     store,
     secret: process.env.SECRET,
