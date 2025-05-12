@@ -35,8 +35,7 @@ module.exports.scrapeData = async (req, res) => {
             }
 
             try {
-                const parsedData = JSON.parse(messages.join("")); // Convert to JSON if needed
-                logger.info(`Scraping successful using ${method} on URL: ${url}`);
+                const parsedData = JSON.parse(messages.join(""));
                 res.json({ message: "Scraping successful", data: parsedData });
             } catch (error) {
                 logger.error(`JSON Parse Error from ${script}: ${error.message}`);

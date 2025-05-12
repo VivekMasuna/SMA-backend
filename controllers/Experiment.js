@@ -13,7 +13,7 @@ const PYTHON_CMD = isProduction
             const path = require("child_process")
                 .execSync(process.platform === "win32" ? "where python" : "which python")
                 .toString().split("\n")[0].trim();
-            console.log(`Python path found: ${path}`);
+            // console.log(`Python path found: ${path}`);
             return path;
         } catch (err) {
             console.warn('Failed to detect Python path, falling back to "python"');
@@ -24,7 +24,6 @@ const PYTHON_CMD = isProduction
 module.exports.experiment = async (req, res) => {
     try {
         const experimentNo = parseInt(req.params.no, 10);
-        logger.info(`Fetching experiment number: ${experimentNo}`);
         if (isNaN(experimentNo)) {
             logger.warn('Invalid experiment number received');
             return res.status(400).json({ error: "Invalid experiment number" });
@@ -40,8 +39,6 @@ module.exports.experiment = async (req, res) => {
                 availableExperiments: allExperiments
             });
         }
-
-        logger.info(`Experiment ${experimentNo} found`);
         res.json(experiment);
     } catch (error) {
         logger.error("Error fetching experiment:", error);
@@ -63,8 +60,6 @@ module.exports.sentimentCSV = (req, res) => {
         return res.status(400).json({ error: 'No input file provided.' });
     }
 
-    logger.info(`Processing file: ${filePath}`);
-
     if (!fs.existsSync(filePath)) {
         logger.warn(`File not found: ${filePath}`);
         return res.status(404).json({ error: 'File not found.' });
@@ -76,7 +71,6 @@ module.exports.sentimentCSV = (req, res) => {
     }
 
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'sentiment_analysis.py');
-    logger.info(`Using Python script: ${pythonScript}`);
 
     exec(`${PYTHON_CMD} "${pythonScript}" "${filePath}"`, (error, stdout, stderr) => {
         if (error || stderr) {
@@ -89,7 +83,6 @@ module.exports.sentimentCSV = (req, res) => {
 
         try {
             const output = JSON.parse(stdout);
-            logger.info('Sentiment analysis (CSV) complete');
             return res.status(200).json({ message: 'Analysis complete.', output });
         } catch (parseError) {
             logger.error('Failed to parse Python output (CSV)', { stdout });
@@ -111,8 +104,6 @@ module.exports.sentimentText = (req, res) => {
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'sentiment_analysis_text.py');
     const safeText = text.replace(/"/g, '\\"');
 
-    logger.info('Running sentiment analysis on text input');
-
     exec(`${PYTHON_CMD} "${pythonScript}" "${safeText}"`, (error, stdout, stderr) => {
         if (error) {
             logger.error('Python script execution error (text)', { error: error.message });
@@ -121,7 +112,6 @@ module.exports.sentimentText = (req, res) => {
 
         try {
             const output = JSON.parse(stdout);
-            logger.info('Sentiment analysis (text) complete');
             res.status(200).json({ message: 'Analysis complete', output });
         } catch (e) {
             logger.error('Failed to parse Python output (text)');
@@ -153,8 +143,6 @@ module.exports.sentimentMulti = (req, res) => {
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'sentiment_analysis_multi.py');
     const pythonProcess = spawn(PYTHON_CMD, [pythonScript]);
 
-    logger.info('Running sentiment analysis on multiple entries');
-
     let stdout = '';
     let stderr = '';
 
@@ -169,7 +157,6 @@ module.exports.sentimentMulti = (req, res) => {
 
         try {
             const parsed = JSON.parse(stdout);
-            logger.info('Sentiment analysis (multi) complete');
             res.status(200).json({ output: parsed });
         } catch (e) {
             logger.error('Failed to parse Python output (multi)', { raw: stdout });
@@ -201,7 +188,6 @@ module.exports.defaultDatasets = (req, res) => {
             return res.status(404).json({ error: 'No CSV datasets found.' });
         }
 
-        logger.info(`Found ${csvFiles.length} datasets`);
         res.status(200).json({ datasets: csvFiles });
     });
 };
@@ -216,10 +202,7 @@ module.exports.runTopicModeling = (req, res) => {
     const numTopics = req.body.numTopics || 5;
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'topic_modeling.py');
 
-    logger.info(`Running topic modeling on file: ${filePath}`);
-
     exec(`"${PYTHON_CMD}" "${pythonScript}" "${filePath}" "${numTopics}"`, (error, stdout, stderr) => {
-        logger.error('[SERVER] STDERR:', stderr);
         if (error) logger.error('[SERVER] ERROR:', error.message);
 
         if (error) {
@@ -242,7 +225,6 @@ module.exports.runTopicModeling = (req, res) => {
             if (!match) throw new Error("JSON not found in Python output");
 
             const output = JSON.parse(match[1]);
-            logger.info('Topic modeling complete');
             return res.status(200).json({
                 message: 'Topic modeling complete',
                 output: output,
@@ -272,7 +254,6 @@ module.exports.getDefaultDatasets = (req, res) => {
             return res.status(404).json({ error: 'No CSV datasets found.' });
         }
 
-        logger.info(`Found ${csvFiles.length} default datasets`);
         return res.status(200).json({ datasets: csvFiles });
     });
 };
@@ -294,10 +275,7 @@ module.exports.runTopicModelingDefault = (req, res) => {
 
     const pythonScript = path.join(__dirname, '..', 'python_scripts', 'topic_modeling.py');
 
-    logger.info(`Running topic modeling on default dataset: ${datasetName}`);
-
     exec(`"${PYTHON_CMD}" "${pythonScript}" "${datasetPath}" "${numTopics}"`, (error, stdout, stderr) => {
-        logger.error('[SERVER] STDERR:', stderr);
         if (error) logger.error('[SERVER] ERROR:', error.message);
 
         if (error) {
@@ -320,7 +298,6 @@ module.exports.runTopicModelingDefault = (req, res) => {
             if (!match) throw new Error("JSON not found in Python output");
 
             const output = JSON.parse(match[1]);
-            logger.info('Default topic modeling complete');
             return res.status(200).json({
                 message: 'Topic modeling complete',
                 output,
